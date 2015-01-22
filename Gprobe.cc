@@ -180,7 +180,7 @@ uint Gprobe::fill_planes() // where is the source?
 void Gprobe::copy_planes(float4 *planes, float *planediv)
 {
 	if (!m_usePlanes) return;
-
+	
 	planes[0] = make_float4(0, 0, 1.0, -m_origin.z);		// bottom plane
 	planediv[0] = 1.0;
 	planes[1] = make_float4(0, 1.0, 0, -m_origin.y);		// side plane (y near)
