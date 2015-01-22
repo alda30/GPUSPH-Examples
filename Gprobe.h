@@ -37,7 +37,7 @@ class Gprobe: public Problem {
 		void copy_to_array(BufferList &);
 		void copy_planes(float4*, float*);
 
-		void ODE_near_callback(void *, dGeomID, dGeomID);
+		//void ODE_near_callback(void *, dGeomID, dGeomID);
 
 		void release_memory(void);
 };

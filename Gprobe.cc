@@ -22,17 +22,17 @@ Gprobe::Gprobe(const GlobalData *_gdata) : Problem(_gdata)
 	H = 0.6f;
 	wet = false;
 
-	set_deltap(0.05f);
+	set_deltap(0.02f);
 
 	l = 1.0f; w = l; h = 1;
 	m_usePlanes = true;
 
 	// SPH parameters
-	m_simparams.dt = 0.00004f;			// initial timestep
+	m_simparams.dt = 0.0001f;			// initial timestep
 	m_simparams.xsph = false;
 	m_simparams.dtadapt = true;			// adaptive time step is selected
 	m_simparams.dtadaptfactor = 0.3;	// safety factor in the adaptive time step formula
-	m_simparams.buildneibsfreq = 20;	// frequency (in iterations) of neib list rebuilding
+	m_simparams.buildneibsfreq = 10;	// frequency (in iterations) of neib list rebuilding
 	m_simparams.shepardfreq = 0;		// frequency (in iterations) of Shepard density filter
 	m_simparams.mlsfreq = 0;			// frequency (in iterations) of MLS density filter
 
@@ -134,6 +134,11 @@ int Gprobe::fill_parts()
 
 	//==========================================
 	// Do we need to define IDE planes for box? if so, create it here
+	planes[0] = dCreatePlane(m_ODESpace, 0.0, 0.0, 1.0, -m_origin.z);
+	planes[1] = dCreatePlane(m_ODESpace, 1.0, 0.0, 0.0, -m_origin.x);
+	planes[2] = dCreatePlane(m_ODESpace, -1.0, 0.0, 0.0, -m_origin.x + l);
+	planes[3] = dCreatePlane(m_ODESpace, 0.0, 1.0, 0.0, -m_origin.y);
+	planes[4] = dCreatePlane(m_ODESpace, 0.0, -1.0, 0.0, -m_origin.y + w);
 	//==========================================
 
 
@@ -159,9 +164,11 @@ int Gprobe::fill_parts()
 	float fallingHeight = 3.0f;
 	float GprobeRadius = 0.025f;
 	float GrpobeHeight = 1.0f;
+	float GprobeMass = 8.3f;
 	float r0 = m_physparams.r0;
 	cylinder = Cylinder(Point(l/2, w/2, fallingHeight), Vector(GrpobeHeight, 0.0, 0.0), Vector(0.0, 0.0, GrpobeHeight));
 	cylinder.SetPartMass(r0, m_physparams.rho0[0]*0.3);
+	cylinder.SetMass(r0, GprobeMass);
 	cylinder.Unfill(parts, r0);					// what does this function do?
 	cylinder.FillBorder(cylinder.GetParts(), r0);
 	cylinder.ODEBodyCreate(m_ODEWorld, m_deltap);
@@ -185,11 +192,11 @@ void Gprobe::copy_planes(float4 *planes, float *planediv)
 	planediv[0] = 1.0;
 	planes[1] = make_float4(0, 1.0, 0, -m_origin.y);		// side plane (y near)
 	planediv[1] = 1.0;
-	planes[2] = make_float4(0, -1.0, 0, m_origin.y + w);	// side plane (y far)
+	planes[2] = make_float4(0, -1.0, 0, -m_origin.y + w);	// side plane (y far)
 	planediv[2] = 1.0;
 	planes[3] = make_float4(1.0, 0, 0, -m_origin.x);		// side plane (x near)
 	planediv[3] = 1.0;
-	planes[4] = make_float4(-1.0, 0, 0, m_origin.x + l);	// side plane (x far)
+	planes[4] = make_float4(-1.0, 0, 0, -m_origin.x + l);	// side plane (x far)
 	planediv[4] = 1.0;
 }
 
@@ -200,7 +207,7 @@ void Gprobe::ODE_near_callback(void *data, dGeomID o1, dGeomID o2)
 	dContact contact[N];
 
 	int n = dCollide(o1, o2, N, &contact[0].geom, sizeof(dContact));
-	if ((o1 == cube.m_ODEGeom && o2 == sphere.m_ODEGeom) || (o2 == cube.m_ODEGeom && o1 == sphere.m_ODEGeom)) {
+	if ((o1 == cube.m_ODEGeom && o2 == cylinder.m_ODEGeom) || (o2 == cube.m_ODEGeom && o1 == cylinder.m_ODEGeom)) {
 		cout << "Collision between cube and obstacle " << n << "contact points\n";
 	}
 	for (int i = 0; i < n; i++) {
