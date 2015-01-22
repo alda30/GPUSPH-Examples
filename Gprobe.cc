@@ -22,7 +22,7 @@ Gprobe::Gprobe(const GlobalData *_gdata) : Problem(_gdata)
 	H = 0.6f;
 	wet = false;
 
-	set_deltap(0.02f);
+	set_deltap(0.0625f);
 
 	l = 1.0f; w = l; h = 1;
 	m_usePlanes = true;
@@ -52,7 +52,7 @@ Gprobe::Gprobe(const GlobalData *_gdata) : Problem(_gdata)
 
 	m_simparams.tend = 5.0;
 	if (m_simparams.boundarytype == SA_BOUNDARY) {
-		m_simparams.maxneibsnum = 256; // needed during gamma initialization phase // maximum number of neibs (should be a multiple of NEIBS_INTERLEAVE)
+		m_simparams.maxneibsnum = 3321; // needed during gamma initialization phase // maximum number of neibs (should be a multiple of NEIBS_INTERLEAVE)
 
 	};
 
