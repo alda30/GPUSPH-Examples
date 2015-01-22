@@ -207,9 +207,9 @@ void Gprobe::ODE_near_callback(void *data, dGeomID o1, dGeomID o2)
 	dContact contact[N];
 
 	int n = dCollide(o1, o2, N, &contact[0].geom, sizeof(dContact));
-	if ((o1 == cube.m_ODEGeom && o2 == cylinder.m_ODEGeom) || (o2 == cube.m_ODEGeom && o1 == cylinder.m_ODEGeom)) {
-		cout << "Collision between cube and obstacle " << n << "contact points\n";
-	}
+	// if ((o1 == cylinder.m_ODEGeom && o2 == sphere.m_ODEGeom) || (o2 == cylinder.m_ODEGeom && o1 == sphere.m_ODEGeom)) {
+	// 	cout << "Collision between cube and obstacle " << n << "contact points\n";
+	// }
 	for (int i = 0; i < n; i++) {
 		contact[i].surface.mode = dContactBounce;
 		contact[i].surface.mu   = dInfinity;
