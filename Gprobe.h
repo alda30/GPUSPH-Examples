@@ -3,7 +3,6 @@
 
 #include "Problem.h"
 #include "Point.h"
-#include "Rect.h"
 #include "Cube.h"
 #include "Cylinder.h"
 
@@ -27,6 +26,10 @@ class Gprobe: public Problem {
 		dJointID	joint;
 		Cylinder	cylinder;
 		bool 		wet;	// set wet to true have a wet bed experiment
+		float fallingHeight;
+		float GprobeRadius;
+		float GrpobeHeight;
+		float GprobeMass;
 
 	public:
 		Gprobe(const GlobalData *);

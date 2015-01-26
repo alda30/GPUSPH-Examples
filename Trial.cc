@@ -153,8 +153,8 @@ int Trial::fill_parts()
 	
 	// Rigid body #2 : cylinder
 	cylinder = Cylinder(Point(0.5*lx, 0.5*ly, 2.0), 0.025, Vector(0, 0, 0.5));
-	cylinder.SetPartMass(8.3f);
-	cylinder.SetMass(8.3f);
+	cylinder.SetPartMass(5.0f);
+	cylinder.SetMass(5.0f);
 	cylinder.Unfill(parts, r0);
 	cylinder.FillBorder(cylinder.GetParts(), r0);
 	cylinder.ODEBodyCreate(m_ODEWorld, m_deltap);
