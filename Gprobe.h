@@ -30,7 +30,7 @@ class Gprobe: public Problem {
 
 	public:
 		Gprobe(const GlobalData *);
-		~Gprobe(void);
+		virtual ~Gprobe(void);
 
 		int fill_parts(void);
 		uint fill_planes(void);
