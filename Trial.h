@@ -32,6 +32,7 @@ class Trial: public Problem {
 		Cylinder	cylinder;
 		dGeomID		planes[5];
 		dJointID	joint;
+		float3 		ODEGravity;
 
 
 	public:
@@ -45,6 +46,7 @@ class Trial: public Problem {
 
 		void ODE_near_callback(void *, dGeomID, dGeomID);
 
+		float3 g_callback(const float);
 		void release_memory(void);
 };
 #endif	/* _TRIAL_H */

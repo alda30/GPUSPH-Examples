@@ -21,7 +21,7 @@ Trial::Trial(const GlobalData *_gdata) : Problem(_gdata)
 	m_origin = make_double3(0.0, 0.0, 0.0);
 
 	// SPH parameters
-	set_deltap(0.010f);
+	set_deltap(0.06f);
 	m_simparams.dt = 0.0001f;
 	m_simparams.xsph = false;
 	m_simparams.dtadapt = true;
@@ -32,7 +32,8 @@ Trial::Trial(const GlobalData *_gdata) : Problem(_gdata)
 	//m_simparams.visctype = ARTVISC;
 	m_simparams.visctype = DYNAMICVISC;
 	m_simparams.boundarytype= SA_BOUNDARY;
-	m_simparams.tend = 4.0;
+	m_simparams.tend = 20.0;
+	m_simparams.gcallback = true;
 
 	// Free surface detection
 	m_simparams.surfaceparticle = false;
@@ -67,7 +68,9 @@ Trial::Trial(const GlobalData *_gdata) : Problem(_gdata)
 	m_ODEWorld = dWorldCreate();	// Create a dynamic world
 	m_ODESpace = dHashSpaceCreate(0);
 	m_ODEJointGroup = dJointGroupCreate(0);
-	dWorldSetGravity(m_ODEWorld, m_physparams.gravity.x, m_physparams.gravity.y, m_physparams.gravity.z);	// Set gravity（x, y, z)
+	ODEGravity=make_float3(0.0,0.0,0.0);
+	dWorldSetGravity(m_ODEWorld, 0.0f, 0.0f, 0.0f);	// Set gravity（x, y, z)
+	
 
 	// Drawing and saving times
 	set_timer_tick( 0.001f);
@@ -91,6 +94,20 @@ void Trial::release_memory(void)
 	parts.clear();
 	obstacle_parts.clear();
 	boundary_parts.clear();
+}
+
+float3 Trial::g_callback(const float t)
+{
+	if(t<15){
+		dWorldSetGravity(m_ODEWorld, ODEGravity.x, ODEGravity.y, ODEGravity.z);
+		m_physparams.gravity=make_float3(0.,0.,-9.81f);
+	}
+	else{
+		ODEGravity=make_float3(0.0,0.0,-9.81);
+		dWorldSetGravity(m_ODEWorld, ODEGravity.x, ODEGravity.y, ODEGravity.z);
+		m_physparams.gravity=make_float3(0.,0.,-9.81f);
+	}
+	return m_physparams.gravity;
 }
 
 
