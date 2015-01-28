@@ -1,4 +1,4 @@
-#include <math.h>
+#include <cmath>
 #include <iostream>
 
 #include "Gprobe.h"
@@ -59,11 +59,11 @@ Gprobe::Gprobe(const GlobalData *_gdata) : Problem(_gdata)
 
 	// Physical parameters
 	m_physparams.gravity = make_float3(0.0, 0.0, -9.81f);
-	const float g = length(m_physparams.gravity);
-	const float maxvel = sqrt(g*H);
+	g = length(m_physparams.gravity);
+	maxvel = sqrt(g*H);
 	// purely for cosmetic reason, let's round the soundspeed to the next
 	// integer
-	const float c0 = ceil(10*maxvel);
+	c0 = ceil(10*maxvel);
 	m_physparams.set_density(0, 1800.0, 7.0f, c0); // the second parameter is rho (total (or initial) density); third one is gamma
 
 	m_physparams.dcoeff = 5.0f*g*H;					// what is this?	
@@ -74,7 +74,7 @@ Gprobe::Gprobe(const GlobalData *_gdata) : Problem(_gdata)
 	//m_physparams.kinematicvisc = 1.0e-6f;
 	m_physparams.artvisccoeff = 200.0f;
 	m_physparams.epsartvisc = 0.01*m_simparams.slength*m_simparams.slength;	// what is this? 
-																			// we have not chosen smoothing length and by default its set to zero. Why? We dont need that?
+	// we have not chosen smoothing length and by default its set to zero. Why? We dont need that?
 	m_physparams.epsxsph = 0.5f;	// XSPH correction coefficient
 
 	// Set ODE parameters:
@@ -116,7 +116,7 @@ int Gprobe::fill_parts()
 	// distance between fluid box and wall
 	float wd = m_physparams.r0;
 
-	parts.reserve(14000); // what is this? or for example in 'DamBreak3D' what is 'boundary_parts.reserve(2000);'?
+	//parts.reserve(14000); // what is this? or for example in 'DamBreak3D' what is 'boundary_parts.reserve(2000);'?
 
 	experiment_box = Cube(Point(m_origin), Vector(l, 0, 0), Vector(0, w, 0), Vector(0, 0, h));
 
@@ -159,6 +159,9 @@ int Gprobe::fill_parts()
 //			vertex_parts[i](1) > 0.5*w && vertex_parts[i](1) < 0.5*w+2*m_deltap)
 //			parts.push_back(Point(vertex_parts[i](0) + 0.5*m_deltap, vertex_parts[i](1) + 0.5*m_deltap, 0.0));
 
+
+	boundary_parts.reserve(2000);
+	parts.reserve(14000);
 
 	//===============Rigidbody: Graviprobe====================
 	float fallingHeight = 3.0f;

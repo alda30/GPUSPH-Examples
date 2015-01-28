@@ -20,16 +20,19 @@ class Gprobe: public Problem {
 		float		h, w, l;
 		float		H; // still water level
 		bool		m_usePlanes; // use planes or boundaries
+		float 		g;
+		float 		maxvel;
+		float 		c0;
 
 		// ODE stuff
 		dGeomID		planes[5];
 		dJointID	joint;
 		Cylinder	cylinder;
 		bool 		wet;	// set wet to true have a wet bed experiment
-		float fallingHeight;
-		float GprobeRadius;
-		float GrpobeHeight;
-		float GprobeMass;
+		float 		fallingHeight;
+		float 		GprobeRadius;
+		float 		GrpobeHeight;
+		float 		GprobeMass;
 
 	public:
 		Gprobe(const GlobalData *);
