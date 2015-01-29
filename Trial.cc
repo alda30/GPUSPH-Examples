@@ -81,7 +81,7 @@ Trial::Trial(const GlobalData *_gdata) : Problem(_gdata)
 
 	intTime1 =  intTime2 = 0;
 	outputData.open("outputData.txt");
-	outputData << "time(s)"<< " " << "force(N)" << " " << "linearVelocity(m/s)" <<endl;
+	outputData << "time(s)"<< " " << "linearVelocity(m/s)" << " " << "Acceleration(m/s^2)" << endl;
 
 	// Name of problem used for directory creation
 	m_name = "Trial";
@@ -115,17 +115,12 @@ float3 Trial::g_callback(const float t)
 		m_physparams.gravity=make_float3(0.,0.,-9.81f);
 	}
 
-	// here I tried to make a loop to write forces over time steps
-	// outputData.open("outputData.txt");
-	// outputData << "time (s)"<< " " << "force (N)" << endl;
-
-	if (t>15.5 && t<16) {
-		outputData << t << " " << dBodyGetForce(cylinder.m_ODEBody)[2] << " " << dBodyGetLinearVel(cylinder.m_ODEBody)[2] << endl;
-		// intTime1 = ceil(t/0.001);
-		// if (intTime1 > intTime2){
-		// 	outputData << intTime1 << " " << dBodyGetForce(cylinder.m_ODEBody)[2] << " " << dBodyGetLinearVel(cylinder.m_ODEBody)[2] << endl;
-		// }
-		// intTime2 = ceil(t/0.001);
+	if (t>15 && t<16) {
+		intTime1 = ceil(t/0.0001);
+		if (intTime1 > intTime2){
+			outputData << t << " " << dBodyGetLinearVel(cylinder.m_ODEBody)[2] << endl;
+		}
+		intTime2 = ceil(t/0.0001);
 	}
 	
 
