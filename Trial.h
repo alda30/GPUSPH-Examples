@@ -1,6 +1,7 @@
 #ifndef _TRIAL_H
 #define	_TRIAL_H
 
+#include <fstream>
 #include "Problem.h"
 #include "Point.h"
 #include "Cube.h"
@@ -10,6 +11,8 @@
 #include "Cylinder.h"
 
 #include "ode/ode.h"
+
+using namespace std;
 
 class Trial: public Problem {
 	private:
@@ -34,7 +37,10 @@ class Trial: public Problem {
 		dJointID	joint;
 		float3 		ODEGravity;
 
-
+		// ode force output writing
+		ofstream outputData;
+		int 		intTime1, intTime2;
+	
 	public:
 		Trial(const GlobalData *);
 		virtual ~Trial(void);

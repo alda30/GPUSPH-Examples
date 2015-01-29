@@ -1,10 +1,13 @@
 #include <cmath>
 #include <iostream>
+#include <fstream>
 
 #include "Trial.h"
 #include "Point.h"
 #include "particledefine.h"
 #include "GlobalData.h"
+
+using namespace std;
 
 Trial::Trial(const GlobalData *_gdata) : Problem(_gdata)
 {
@@ -21,7 +24,7 @@ Trial::Trial(const GlobalData *_gdata) : Problem(_gdata)
 	m_origin = make_double3(0.0, 0.0, 0.0);
 
 	// SPH parameters
-	set_deltap(0.01f);
+	set_deltap(0.04f);
 	m_simparams.dt = 0.0001f;
 	m_simparams.xsph = false;
 	m_simparams.dtadapt = true;
@@ -76,6 +79,10 @@ Trial::Trial(const GlobalData *_gdata) : Problem(_gdata)
 	set_timer_tick( 0.001f);
 	add_writer(VTKWRITER, 5);
 
+	intTime1 =  intTime2 = 0;
+	outputData.open("outputData.txt");
+	outputData << "time(s)"<< " " << "force(N)" << "linearVelocity(m/s)" <<endl;
+
 	// Name of problem used for directory creation
 	m_name = "Trial";
 }
@@ -107,6 +114,23 @@ float3 Trial::g_callback(const float t)
 		dWorldSetGravity(m_ODEWorld, ODEGravity.x, ODEGravity.y, ODEGravity.z);
 		m_physparams.gravity=make_float3(0.,0.,-9.81f);
 	}
+
+	// here I tried to make a loop to write forces over time steps
+	// outputData.open("outputData.txt");
+	// outputData << "time (s)"<< " " << "force (N)" << endl;
+
+	if (t>15.5 && t<16) {
+		outputData << t << " " << dBodyGetForce(cylinder.m_ODEBody)[2] << " " << dBodyGetLinearVel(cylinder.m_ODEBody)[2] << endl;
+		// intTime1 = ceil(t/0.001);
+		// if (intTime1 > intTime2){
+		// 	outputData << intTime1 << " " << dBodyGetForce(cylinder.m_ODEBody)[2] << " " << dBodyGetLinearVel(cylinder.m_ODEBody)[2] << endl;
+		// }
+		// intTime2 = ceil(t/0.001);
+	}
+	
+
+	//outputData.close();
+
 	return m_physparams.gravity;
 }
 
