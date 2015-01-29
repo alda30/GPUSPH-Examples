@@ -81,7 +81,7 @@ Trial::Trial(const GlobalData *_gdata) : Problem(_gdata)
 
 	intTime1 =  intTime2 = 0;
 	outputData.open("outputData.txt");
-	outputData << "time(s)"<< " " << "force(N)" << "linearVelocity(m/s)" <<endl;
+	outputData << "time(s)"<< " " << "force(N)" << " " << "linearVelocity(m/s)" <<endl;
 
 	// Name of problem used for directory creation
 	m_name = "Trial";
