@@ -37,7 +37,7 @@ class Trial: public Problem {
 		dJointID	joint;
 		float3 		ODEGravity;
 
-		// ode force output writing
+		// ode output writing
 		ofstream outputData;
 		int 		intTime1, intTime2;
 	
