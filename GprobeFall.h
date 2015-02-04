@@ -7,38 +7,34 @@
 #include "Cube.h"
 #include "Sphere.h"
 #include "Cone.h"
-#include "Torus.h"
 #include "Cylinder.h"
 
 #include "ode/ode.h"
 
-using namespace std;
 
 class GprobeFall: public Problem {
 	private:
 		Cube		experiment_box;
-		Cube		obstacle;
+		Cube 		fluid;
 		PointVect	parts;
 		PointVect	boundary_parts;
 		PointVect	boundary_elems;
 		PointVect	vertex_parts;
 		VertexVect	vertex_indexes;
-		PointVect	obstacle_parts;
 		double		H;				// still water level
 		double		lx, ly, lz;		// dimension of experiment box
-		bool		wet;			// set wet to true have a wet bed experiment
 		bool		m_usePlanes; // use planes or boundaries
 
 		// ODE stuff
-		Sphere		sphere;
 		Cube		cube;
 		Cylinder	cylinder;
+		Cone 		cone;
 		dGeomID		planes[5];
 		dJointID	joint;
 		float3 		ODEGravity;
 
 		// ode output writing
-		ofstream outputData;
+		ofstream 	outputData;
 		int 		intTime1, intTime2;
 	
 	public:

@@ -7,7 +7,6 @@
 #include "particledefine.h"
 #include "GlobalData.h"
 
-using namespace std;
 
 GprobeFall::GprobeFall(const GlobalData *_gdata) : Problem(_gdata)
 {
@@ -16,7 +15,6 @@ GprobeFall::GprobeFall(const GlobalData *_gdata) : Problem(_gdata)
 	ly = 1.0;
 	lz = 3.0;
 	H = 0.6;
-	wet = false;
 
 	m_usePlanes = true;
 
@@ -66,7 +64,7 @@ GprobeFall::GprobeFall(const GlobalData *_gdata) : Problem(_gdata)
 	m_physparams.epsartvisc = 0.01*m_simparams.slength*m_simparams.slength;
 
 	// Allocate data for floating bodies
-	allocate_ODE_bodies(1);
+	allocate_ODE_bodies(2);
 	dInitODE();				// Initialize ODE
 	m_ODEWorld = dWorldCreate();	// Create a dynamic world
 	m_ODESpace = dHashSpaceCreate(0);
@@ -99,7 +97,6 @@ GprobeFall::~GprobeFall(void)
 void GprobeFall::release_memory(void)
 {
 	parts.clear();
-	obstacle_parts.clear();
 	boundary_parts.clear();
 }
 
@@ -122,9 +119,6 @@ float3 GprobeFall::g_callback(const float t)
 		}
 		intTime2 = ceil(t/0.0001);
 	}
-	
-
-	//outputData.close();
 
 	return m_physparams.gravity;
 }
@@ -134,8 +128,6 @@ int GprobeFall::fill_parts()
 {
 	float r0 = m_physparams.r0;
 
-	Cube fluid, fluid1;
-
 	experiment_box = Cube(Point(0, 0, 0), Vector(lx, 0, 0),
 						Vector(0, ly, 0), Vector(0, 0, lz));
 	planes[0] = dCreatePlane(m_ODESpace, 0.0, 0.0, 1.0, 0.0);
@@ -144,9 +136,8 @@ int GprobeFall::fill_parts()
 	planes[3] = dCreatePlane(m_ODESpace, 0.0, 1.0, 0.0, 0.0);
 	planes[4] = dCreatePlane(m_ODESpace, 0.0, -1.0, 0.0, -ly);
 
-	//obstacle = Cube(Point(0.6, 0.24, 2*r0), Vector(0.12, 0, 0),
-	//				Vector(0, 0.12, 0), Vector(0, 0, 0.7*lz - 2*r0));
 	experiment_box.SetPartMass(r0, m_physparams.rho0[0]);
+	
 	if(!m_usePlanes){
 		if(m_simparams.boundarytype == SA_BOUNDARY) {
 			experiment_box.FillBorder(boundary_parts, boundary_elems, vertex_parts, vertex_indexes, r0, false); // the last parameters is a boolean one to determine if the top face to be filled or not. (false = open)
@@ -157,52 +148,38 @@ int GprobeFall::fill_parts()
 	}
 
 
-	fluid = Cube(Point(r0, r0, r0), Vector(lx - 2*r0, 0, 0),
-				Vector(0, ly - 2*r0, 0), Vector(0, 0, H - r0));
-
-	if (wet) {
-		fluid1 = Cube(Point(H + m_deltap + r0 , r0, r0), Vector(lx - H - m_deltap - 2*r0, 0, 0),
-					Vector(0, 0.67 - 2*r0, 0), Vector(0, 0, 0.1));
-	}
-
-	boundary_parts.reserve(2000);
-	parts.reserve(14000);
-
-	
-	
-
-	obstacle.SetPartMass(r0, m_physparams.rho0[0]*0.1);
-	obstacle.SetMass(r0, m_physparams.rho0[0]*0.1);
-	//obstacle.FillBorder(obstacle.GetParts(), r0, true);
-	//obstacle.ODEBodyCreate(m_ODEWorld, m_deltap);
-	//obstacle.ODEGeomCreate(m_ODESpace, m_deltap);
-	//add_ODE_body(&obstacle);
+	fluid = Cube(Point(r0, r0, r0), Vector(lx - 2*r0, 0, 0), Vector(0, ly - 2*r0, 0), Vector(0, 0, H - r0));
 
 	fluid.SetPartMass(m_deltap, m_physparams.rho0[0]);
 	fluid.Fill(parts, m_deltap, true);
-	if (wet) {
-		fluid1.SetPartMass(m_deltap, m_physparams.rho0[0]);
-		fluid1.Fill(parts, m_deltap, true);
-		obstacle.Unfill(parts, r0);
-	}
-
 	
-	// Rigid body #2 : cylinder
+	// Rigid body #1 : cylinder
 	cylinder = Cylinder(Point(0.5*lx, 0.5*ly, 2.0), 0.025, Vector(0, 0, 0.5));
-	cylinder.SetPartMass(5.0f);
-	cylinder.SetMass(5.0f);
-	cylinder.Unfill(parts, r0);
+	cylinder.SetPartMass(4.5f);
+	cylinder.SetMass(4.5f);
 	cylinder.FillBorder(cylinder.GetParts(), r0);
 	cylinder.ODEBodyCreate(m_ODEWorld, m_deltap);
 	cylinder.ODEGeomCreate(m_ODESpace, m_deltap);
 	add_ODE_body(&cylinder);
 
+	// Rigid body #2 :  cone
+	cone = Cone(Point(0.5*lx, 0.5*ly, 1.5), 0.0, 0.025, Vector(0.0, 0.0, 0.1));
+	cone.SetPartMass(4.5f);
+	cone.SetMass(4.5f);
+	cone.FillBorder(cone.GetParts(), r0);
+	cone.ODEBodyCreate(m_ODEWorld, m_deltap);
+	cone.ODEGeomCreate(m_ODESpace, m_deltap);
+	add_ODE_body(&cone);
+
 	/*joint = dJointCreateHinge(m_ODEWorld, 0);				// Create a hinge joint
-	dJointAttach(joint, obstacle.m_ODEBody, 0);		// Attach joint to bodies
+	dJointAttach(joint, obstacle.m_ODEBody, 0);		// Attach joint to bodies (presumably for two objects)
 	dJointSetHingeAnchor(joint, 0.7, 0.24, 2*r0);	// Set a joint anchor
 	dJointSetHingeAxis(joint, 0, 1, 0);*/
 
-	return parts.size() + boundary_parts.size() + obstacle_parts.size() + get_ODE_bodies_numparts();
+	boundary_parts.reserve(2000);
+	parts.reserve(14000);
+
+	return parts.size() + boundary_parts.size() + get_ODE_bodies_numparts();
 }
 
 uint GprobeFall::fill_planes() // where is the source?
@@ -231,8 +208,11 @@ void GprobeFall::ODE_near_callback(void *data, dGeomID o1, dGeomID o2)
 {
 	const int N = 10;
 	dContact contact[N];
-
+	
 	int n = dCollide(o1, o2, N, &contact[0].geom, sizeof(dContact));
+	if ((o1 == cylinder.m_ODEGeom && o2 == cone.m_ODEGeom) || (o2 == cylinder.m_ODEGeom && o1 == cone.m_ODEGeom)) {
+		cout << "Collision between cube and obstacle " << n << "contact points\n";
+	}
 	
 	for (int i = 0; i < n; i++) {
 		contact[i].surface.mode = dContactBounce;
@@ -272,15 +252,6 @@ void GprobeFall::copy_to_array(BufferList &buffers)
 		j += rbparts.size();
 		std::cout << ", part mass: " << pos[j-1].w << "\n";
 	}
-
-	std::cout << "Obstacle parts: " << obstacle_parts.size() << "\n";
-	for (uint i = j; i < j + obstacle_parts.size(); i++) {
-		vel[i] = make_float4(0, 0, 0, m_physparams.rho0[0]);
-		info[i] = make_particleinfo(BOUNDPART, 1, i);
-		calc_localpos_and_hash(obstacle_parts[i-j], info[i], pos[i], hash[i]);
-	}
-	j += obstacle_parts.size();
-	std::cout << "Obstacle part mass:" << pos[j-1].w << "\n";
 
 	std::cout << "Fluid parts: " << parts.size() << "\n";
 	for (uint i = j; i < j + parts.size(); i++) {
