@@ -194,3 +194,40 @@ Cone::IsInside(const Point& p, const double dx) const
 
 	return inside;
 }
+
+// Added to make it possible for Cone shape to be used in Rigid body part of GPUSPH
+
+//######## GPUSPH FUNCTIONS FOR CONE SHAPE ########
+
+// void
+// Cone::ODEBodyCreate(dWorldID ODEWorld, const double dx, dSpaceID ODESpace)
+// {
+// 	m_ODEBody = dBodyCreate(ODEWorld);
+// 	dMassSetZero(&m_ODEMass);
+// 	//dMassSetCylinderTotal(&m_ODEMass, m_mass, 3, m_r +dx/2.0, m_h + dx);
+// 	//dMassSetSphereTotal(&m_ODEMass, m_mass, m_r + dx/2.0);
+// 	dBodySetMass(m_ODEBody, &m_ODEMass);
+// 	dBodySetPosition(m_ODEBody, m_center(0), m_center(1), m_center(2));
+// 	if (ODESpace)
+// 		ODEGeomCreate(ODESpace, dx);
+// }
+
+// void
+// Cone::ODEGeomCreate(dSpaceID ODESpace, const double dx)
+// {
+// 	//calculate m_rm:
+// 	if (m_rb > m_rt){
+// 		m_rm = m_rb;
+// 	}
+// 	else{
+// 		m_rm = m_rt;
+// 	}
+
+// 	m_ODEGeom = dCreateCone(ODESpace, m_rm, m_h);
+
+// 	if (m_ODEBody)
+// 		dGeomSetBody(m_ODEGeom, m_ODEBody);
+// 	else {
+// 		dGeomSetPosition(m_ODEGeom, m_center(0), m_center(1), m_center(2));
+// 	}
+// }

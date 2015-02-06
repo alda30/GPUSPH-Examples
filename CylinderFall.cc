@@ -81,7 +81,7 @@ CylinderFall::CylinderFall(const GlobalData *_gdata) : Problem(_gdata)
 
 	intTime1 =  intTime2 = 0;
 	outputData.open("outputData.txt");
-	outputData << "time(s)"<< " " << "linearVelocity(m/s)" << " " << "Acceleration(m/s^2)" << endl;
+	outputData << "time(s)"<< " " << "linearVelocity(m/s)" << " " << "Force(inX-Y-Z)" << endl;
 
 	// Name of problem used for directory creation
 	m_name = "CylinderFall";
@@ -118,7 +118,7 @@ float3 CylinderFall::g_callback(const float t)
 	if (t>15 && t<16) {
 		intTime1 = ceil(t/0.0001);
 		if (intTime1 > intTime2){
-			outputData << t << " " << dBodyGetLinearVel(cylinder.m_ODEBody)[2] << endl;
+			outputData << t << " " << dBodyGetLinearVel(cylinder.m_ODEBody)[2] << " " << gdata->s_hRbTotalForce[0][MAXBODIES].x << " " << gdata->s_hRbTotalForce[0][MAXBODIES].y << " " << gdata->s_hRbTotalForce[0][MAXBODIES].z << endl;
 		}
 		intTime2 = ceil(t/0.0001);
 	}

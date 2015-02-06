@@ -41,6 +41,8 @@ class Cone: public Object {
 		double	m_h;
 		double	m_hg;
 		double	m_halfaperture;
+		//added to see m_rt or m_rb should be taken as the main radius
+		double m_rm;
 
 	public:
 		Cone(void);
@@ -51,6 +53,10 @@ class Cone: public Object {
 
 		double Volume(const double) const;
 		void SetInertia(const double);
+
+		// Added to make it possible for Cone shape to be used in Rigid body part of GPUSPH
+		// void ODEBodyCreate(dWorldID, const double, dSpaceID ODESpace = 0);
+		// void ODEGeomCreate(dSpaceID, const double);
 
 		void FillBorder(PointVect& points, const double, const bool, const bool);
 		void FillBorder(PointVect& points, double dx)

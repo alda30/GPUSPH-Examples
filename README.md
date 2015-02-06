@@ -1,5 +1,6 @@
 # GPUSPH-examples
 Example problems of GPUSPH
+The files in this repository shoould be placed at ../src/ forlder in GPUSPH repository to make them work.
 
 Apache License
                            Version 2.0, January 2004
