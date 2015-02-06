@@ -24,7 +24,7 @@ CylinderFall::CylinderFall(const GlobalData *_gdata) : Problem(_gdata)
 	m_origin = make_double3(0.0, 0.0, 0.0);
 
 	// SPH parameters
-	set_deltap(0.04f);
+	set_deltap(0.03f);
 	m_simparams.dt = 0.0001f;
 	m_simparams.xsph = false;
 	m_simparams.dtadapt = true;
@@ -81,7 +81,7 @@ CylinderFall::CylinderFall(const GlobalData *_gdata) : Problem(_gdata)
 
 	intTime1 =  intTime2 = 0;
 	outputData.open("outputData.txt");
-	outputData << "time(s)"<< " " << "linearVelocity(m/s)" << " " << "Force(inX-Y-Z)" << endl;
+	outputData << "time(s)"<< " " << "linearVelocity(m/s)" << " " << "forceX(N)" << " " << "forceY(N)" << " " << "forceZ(N)" << endl;
 
 	// Name of problem used for directory creation
 	m_name = "CylinderFall";
@@ -118,7 +118,8 @@ float3 CylinderFall::g_callback(const float t)
 	if (t>15 && t<16) {
 		intTime1 = ceil(t/0.0001);
 		if (intTime1 > intTime2){
-			outputData << t << " " << dBodyGetLinearVel(cylinder.m_ODEBody)[2] << " " << gdata->s_hRbTotalForce[0][MAXBODIES].x << " " << gdata->s_hRbTotalForce[0][MAXBODIES].y << " " << gdata->s_hRbTotalForce[0][MAXBODIES].z << endl;
+			// The first output is time, the second is the velocity of the rigid body, and the third, fourth and fifth are the resultant forces applied on the rigid body. Note that for the s_hRbTotalForce[A][B]: A is the GPU device index, which for my case is 0 because I have only one GPU device, and B is the index of Rigid body of interest in the scene. Becasue here I have only one rigid body (cylinder), this parameter is set to zero again.
+			outputData << t << " " << dBodyGetLinearVel(cylinder.m_ODEBody)[2] << " " << gdata->s_hRbTotalForce[0][0].x << " " << gdata->s_hRbTotalForce[0][0].y << " " << gdata->s_hRbTotalForce[0][0].z << endl;
 		}
 		intTime2 = ceil(t/0.0001);
 	}
