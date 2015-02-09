@@ -207,7 +207,7 @@ Cone::ODEBodyCreate(dWorldID ODEWorld, const double dx, dSpaceID ODESpace)
 	//dMassSetCylinderTotal(&m_ODEMass, m_mass, 3, m_r +dx/2.0, m_h + dx);
 	//dMassSetSphereTotal(&m_ODEMass, m_mass, m_r + dx/2.0);
 	//Presumably we have to use dMassSetTrimesh()
-	dMassSetTrimesh(&m_ODEMass, m_mass, m_ODEGeom);
+	dMassSetTrimeshTotal(&m_ODEMass, m_mass, m_ODEGeom);
 
 	dBodySetMass(m_ODEBody, &m_ODEMass);
 	dBodySetPosition(m_ODEBody, m_center(0), m_center(1), m_center(2));
@@ -222,47 +222,47 @@ Cone::ODEGeomCreate(dSpaceID ODESpace, const double dx)
 	// #0
 	Vertices[0][0] = 0;
 	Vertices[0][1] = m_rt;
-	Vertices[0][2] = 0;
+	Vertices[0][2] = 0.25 * m_h;
 	// #1
 	Vertices[1][0] = 0.6 * m_rt;
 	Vertices[1][1] = 0.8 * m_rt;
-	Vertices[1][2] = 0;
+	Vertices[1][2] = 0.25 * m_h;
 	// #2
 	Vertices[2][0] = 0.96 * m_rt;
 	Vertices[2][1] = 0.308 * m_rt;
-	Vertices[2][2] = 0;
+	Vertices[2][2] = 0.25 * m_h;
 	// #3
 	Vertices[3][0] = 0.96 * m_rt;
 	Vertices[3][1] = -0.308 * m_rt;
-	Vertices[3][2] = 0;
+	Vertices[3][2] = 0.25 * m_h;
 	// #4
 	Vertices[4][0] = 0.6 * m_rt;
 	Vertices[4][1] = -0.02;
-	Vertices[4][2] = 0;
+	Vertices[4][2] = 0.25 * m_h;
 	// #5
 	Vertices[5][0] = 0;
 	Vertices[5][1] = -m_rt;
-	Vertices[5][2] = 0;
+	Vertices[5][2] = 0.25 * m_h;
 	// #6
 	Vertices[6][0] = -0.6 * m_rt;
 	Vertices[6][1] = -0.8 * m_rt;
-	Vertices[6][2] = 0;
+	Vertices[6][2] = 0.25 * m_h;
 	// #7
 	Vertices[7][0] = -0.96 * m_rt;
 	Vertices[7][1] = -0.308 * m_rt;
-	Vertices[7][2] = 0;
+	Vertices[7][2] = 0.25 * m_h;
 	// #8
 	Vertices[8][0] = -0.96 * m_rt;
 	Vertices[8][1] = 0.308 * m_rt;
-	Vertices[8][2] = 0;
+	Vertices[8][2] = 0.25 * m_h;
 	// #9
 	Vertices[9][0] = -0.6 * m_rt;
 	Vertices[9][1] = 0.8 * m_rt;
-	Vertices[9][2] = 0;
+	Vertices[9][2] = 0.25 * m_h;
 	// #10
 	Vertices[10][0] = 0;
 	Vertices[10][1] = 0;
-	Vertices[10][2] = -m_h;
+	Vertices[10][2] = -0.75 * m_h;
 
 	// defining facets
 	// #0
@@ -306,7 +306,7 @@ Cone::ODEGeomCreate(dSpaceID ODESpace, const double dx)
   	Indices[28] = 10;
   	Indices[29] = 0;
 
-	dTriMeshDataID Data = dGeomTriMeshDataCreate();
+	Data = dGeomTriMeshDataCreate();
 	dGeomTriMeshDataBuildSingle(Data, Vertices[0], 3 * sizeof(float), VertexCount, &Indices[0], IndexCount, 3 * sizeof(dTriIndex));
 
 	m_ODEGeom = dCreateTriMesh(ODESpace, Data, 0, 0, 0);

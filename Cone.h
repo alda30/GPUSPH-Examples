@@ -46,6 +46,7 @@ class Cone: public Object {
 
 		int 			Indices[29];
 		double 			Vertices[2][10];
+		dTriMeshDataID 	Data;
 
 	public:
 		Cone(void);
