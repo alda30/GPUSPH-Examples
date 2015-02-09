@@ -199,35 +199,121 @@ Cone::IsInside(const Point& p, const double dx) const
 
 //######## GPUSPH FUNCTIONS FOR CONE SHAPE ########
 
-// void
-// Cone::ODEBodyCreate(dWorldID ODEWorld, const double dx, dSpaceID ODESpace)
-// {
-// 	m_ODEBody = dBodyCreate(ODEWorld);
-// 	dMassSetZero(&m_ODEMass);
-// 	//dMassSetCylinderTotal(&m_ODEMass, m_mass, 3, m_r +dx/2.0, m_h + dx);
-// 	//dMassSetSphereTotal(&m_ODEMass, m_mass, m_r + dx/2.0);
-// 	dBodySetMass(m_ODEBody, &m_ODEMass);
-// 	dBodySetPosition(m_ODEBody, m_center(0), m_center(1), m_center(2));
-// 	if (ODESpace)
-// 		ODEGeomCreate(ODESpace, dx);
-// }
+void
+Cone::ODEBodyCreate(dWorldID ODEWorld, const double dx, dSpaceID ODESpace)
+{
+	m_ODEBody = dBodyCreate(ODEWorld);
+	dMassSetZero(&m_ODEMass);
+	//dMassSetCylinderTotal(&m_ODEMass, m_mass, 3, m_r +dx/2.0, m_h + dx);
+	//dMassSetSphereTotal(&m_ODEMass, m_mass, m_r + dx/2.0);
+	//Presumably we have to use dMassSetTrimesh()
+	dMassSetTrimesh(&m_ODEMass, m_mass, m_ODEGeom);
 
-// void
-// Cone::ODEGeomCreate(dSpaceID ODESpace, const double dx)
-// {
-// 	//calculate m_rm:
-// 	if (m_rb > m_rt){
-// 		m_rm = m_rb;
-// 	}
-// 	else{
-// 		m_rm = m_rt;
-// 	}
+	dBodySetMass(m_ODEBody, &m_ODEMass);
+	dBodySetPosition(m_ODEBody, m_center(0), m_center(1), m_center(2));
+	if (ODESpace)
+		ODEGeomCreate(ODESpace, dx);
+}
 
-// 	m_ODEGeom = dCreateCone(ODESpace, m_rm, m_h);
+void
+Cone::ODEGeomCreate(dSpaceID ODESpace, const double dx)
+{
+	// defining vertices
+	// #0
+	Vertices[0][0] = 0;
+	Vertices[0][1] = m_rt;
+	Vertices[0][2] = 0;
+	// #1
+	Vertices[1][0] = 0.6 * m_rt;
+	Vertices[1][1] = 0.8 * m_rt;
+	Vertices[1][2] = 0;
+	// #2
+	Vertices[2][0] = 0.96 * m_rt;
+	Vertices[2][1] = 0.308 * m_rt;
+	Vertices[2][2] = 0;
+	// #3
+	Vertices[3][0] = 0.96 * m_rt;
+	Vertices[3][1] = -0.308 * m_rt;
+	Vertices[3][2] = 0;
+	// #4
+	Vertices[4][0] = 0.6 * m_rt;
+	Vertices[4][1] = -0.02;
+	Vertices[4][2] = 0;
+	// #5
+	Vertices[5][0] = 0;
+	Vertices[5][1] = -m_rt;
+	Vertices[5][2] = 0;
+	// #6
+	Vertices[6][0] = -0.6 * m_rt;
+	Vertices[6][1] = -0.8 * m_rt;
+	Vertices[6][2] = 0;
+	// #7
+	Vertices[7][0] = -0.96 * m_rt;
+	Vertices[7][1] = -0.308 * m_rt;
+	Vertices[7][2] = 0;
+	// #8
+	Vertices[8][0] = -0.96 * m_rt;
+	Vertices[8][1] = 0.308 * m_rt;
+	Vertices[8][2] = 0;
+	// #9
+	Vertices[9][0] = -0.6 * m_rt;
+	Vertices[9][1] = 0.8 * m_rt;
+	Vertices[9][2] = 0;
+	// #10
+	Vertices[10][0] = 0;
+	Vertices[10][1] = 0;
+	Vertices[10][2] = -m_h;
 
-// 	if (m_ODEBody)
-// 		dGeomSetBody(m_ODEGeom, m_ODEBody);
-// 	else {
-// 		dGeomSetPosition(m_ODEGeom, m_center(0), m_center(1), m_center(2));
-// 	}
-// }
+	// defining facets
+	// #0
+	Indices[0] = 0;
+  	Indices[1] = 10;
+  	Indices[2] = 1;
+  	// #1
+	Indices[3] = 1;
+  	Indices[4] = 10;
+  	Indices[5] = 2;
+	// #2
+	Indices[6] = 2;
+  	Indices[7] = 10;
+  	Indices[8] = 3;
+  	// #3
+	Indices[9] = 3;
+  	Indices[10] = 10;
+  	Indices[11] = 4;
+  	// #4
+	Indices[12] = 4;
+  	Indices[13] = 10;
+  	Indices[14] = 5;
+  	// #5
+	Indices[15] = 5;
+  	Indices[16] = 10;
+  	Indices[17] = 6;
+  	// #6
+	Indices[18] = 6;
+  	Indices[19] = 10;
+  	Indices[20] = 7;
+  	// #7
+	Indices[21] = 7;
+  	Indices[22] = 10;
+  	Indices[23] = 8;
+  	// #8
+	Indices[24] = 8;
+  	Indices[25] = 10;
+  	Indices[26] = 9;
+  	// #9
+	Indices[27] = 9;
+  	Indices[28] = 10;
+  	Indices[29] = 0;
+
+	dTriMeshDataID Data = dGeomTriMeshDataCreate();
+	dGeomTriMeshDataBuildSingle(Data, Vertices[0], 3 * sizeof(float), VertexCount, &Indices[0], IndexCount, 3 * sizeof(dTriIndex));
+
+	m_ODEGeom = dCreateTriMesh(ODESpace, Data, 0, 0, 0);
+
+	if (m_ODEBody)
+		dGeomSetBody(m_ODEGeom, m_ODEBody);
+	else {
+		dGeomSetPosition(m_ODEGeom, m_center(0), m_center(1), m_center(2));
+	}
+}

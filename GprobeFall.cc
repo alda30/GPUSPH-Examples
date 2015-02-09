@@ -164,8 +164,8 @@ int GprobeFall::fill_parts()
 
 	// Rigid body #2 :  cone
 	cone = Cone(Point(0.5*lx, 0.5*ly, 1.5), 0.0, 0.025, Vector(0.0, 0.0, 0.1));
-	cone.SetPartMass(4.5f);
-	cone.SetMass(4.5f);
+	cone.SetPartMass(1.0f);
+	cone.SetMass(1.0f);
 	cone.FillBorder(cone.GetParts(), r0);
 	cone.ODEBodyCreate(m_ODEWorld, m_deltap);
 	cone.ODEGeomCreate(m_ODESpace, m_deltap);

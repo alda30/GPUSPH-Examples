@@ -32,6 +32,8 @@
 #include "Point.h"
 #include "Vector.h"
 
+#define VertexCount 11
+#define IndexCount 30
 
 class Cone: public Object {
 	private:
@@ -41,8 +43,9 @@ class Cone: public Object {
 		double	m_h;
 		double	m_hg;
 		double	m_halfaperture;
-		//added to see m_rt or m_rb should be taken as the main radius
-		double m_rm;
+
+		int 			Indices[29];
+		double 			Vertices[2][10];
 
 	public:
 		Cone(void);
@@ -55,8 +58,8 @@ class Cone: public Object {
 		void SetInertia(const double);
 
 		// Added to make it possible for Cone shape to be used in Rigid body part of GPUSPH
-		// void ODEBodyCreate(dWorldID, const double, dSpaceID ODESpace = 0);
-		// void ODEGeomCreate(dSpaceID, const double);
+		void ODEBodyCreate(dWorldID, const double, dSpaceID ODESpace = 0);
+		void ODEGeomCreate(dSpaceID, const double);
 
 		void FillBorder(PointVect& points, const double, const bool, const bool);
 		void FillBorder(PointVect& points, double dx)
