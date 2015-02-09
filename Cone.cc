@@ -204,10 +204,9 @@ Cone::ODEBodyCreate(dWorldID ODEWorld, const double dx, dSpaceID ODESpace)
 {
 	m_ODEBody = dBodyCreate(ODEWorld);
 	dMassSetZero(&m_ODEMass);
-	//dMassSetCylinderTotal(&m_ODEMass, m_mass, 3, m_r +dx/2.0, m_h + dx);
-	//dMassSetSphereTotal(&m_ODEMass, m_mass, m_r + dx/2.0);
-	//Presumably we have to use dMassSetTrimesh()
-	dMassSetTrimeshTotal(&m_ODEMass, m_mass, m_ODEGeom);
+	//Apparently, I have to set the Inertia matrix for the Trimesh manually, myself!
+	// dMassSetTrimeshTotal(&m_ODEMass, m_mass, m_ODEGeom);
+	dMassSetCylinderTotal(&m_ODEMass, m_mass, 3, m_rt +dx/2.0, m_h + dx);
 
 	dBodySetMass(m_ODEBody, &m_ODEMass);
 	dBodySetPosition(m_ODEBody, m_center(0), m_center(1), m_center(2));
@@ -263,6 +262,10 @@ Cone::ODEGeomCreate(dSpaceID ODESpace, const double dx)
 	Vertices[10][0] = 0;
 	Vertices[10][1] = 0;
 	Vertices[10][2] = -0.75 * m_h;
+	// #11
+	Vertices[11][0] = 0;
+	Vertices[11][1] = 0;
+	Vertices[11][2] = 0.25 * m_h;
 
 	// defining facets
 	// #0
@@ -305,6 +308,46 @@ Cone::ODEGeomCreate(dSpaceID ODESpace, const double dx)
 	Indices[27] = 9;
   	Indices[28] = 10;
   	Indices[29] = 0;
+  	// #10
+	Indices[30] = 0;
+  	Indices[31] = 11;
+  	Indices[32] = 1;
+  	// #11
+	Indices[33] = 1;
+  	Indices[34] = 11;
+  	Indices[35] = 2;
+  	// #12
+	Indices[36] = 2;
+  	Indices[37] = 11;
+  	Indices[38] = 3;
+  	// #13
+	Indices[39] = 3;
+  	Indices[40] = 11;
+  	Indices[41] = 4;
+  	// #14
+	Indices[42] = 4;
+  	Indices[43] = 11;
+  	Indices[44] = 5;
+  	// #15
+	Indices[45] = 5;
+  	Indices[46] = 11;
+  	Indices[47] = 6;
+  	// #16
+	Indices[48] = 6;
+  	Indices[49] = 11;
+  	Indices[50] = 7;
+  	// #17
+	Indices[51] = 7;
+  	Indices[52] = 11;
+  	Indices[53] = 8;
+  	// #18
+	Indices[54] = 8;
+  	Indices[55] = 11;
+  	Indices[56] = 9;
+  	// #19
+	Indices[57] = 9;
+  	Indices[58] = 11;
+  	Indices[59] = 0;
 
 	Data = dGeomTriMeshDataCreate();
 	dGeomTriMeshDataBuildSingle(Data, Vertices[0], 3 * sizeof(float), VertexCount, &Indices[0], IndexCount, 3 * sizeof(dTriIndex));

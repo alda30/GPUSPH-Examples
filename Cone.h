@@ -32,8 +32,8 @@
 #include "Point.h"
 #include "Vector.h"
 
-#define VertexCount 11
-#define IndexCount 30
+#define VertexCount 12
+#define IndexCount 60
 
 class Cone: public Object {
 	private:
