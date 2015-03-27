@@ -101,7 +101,7 @@ void CylinderFall::release_memory(void)
 	boundary_parts.clear();
 }
 
-float3 CylinderFall::g_callback(const float t)
+float3 CylinderFall::g_callback(const double t)
 {
 	if(t<15){
 		dWorldSetGravity(m_ODEWorld, ODEGravity.x, ODEGravity.y, ODEGravity.z);

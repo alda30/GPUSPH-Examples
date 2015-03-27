@@ -52,7 +52,7 @@ class CylinderFall: public Problem {
 
 		void ODE_near_callback(void *, dGeomID, dGeomID);
 
-		float3 g_callback(const float);
+		float3 g_callback(const double);
 		void release_memory(void);
 };
 #endif	/* _CYLINDERFALL_H */

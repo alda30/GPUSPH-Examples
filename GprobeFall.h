@@ -14,31 +14,32 @@
 
 class GprobeFall: public Problem {
 	private:
-		Cube		experiment_box;
-		Cube 		fluid;
-		PointVect	parts;
-		PointVect	boundary_parts;
-		PointVect	boundary_elems;
-		PointVect	vertex_parts;
-		VertexVect	vertex_indexes;
-		double		H;				// still water level
-		double		lx, ly, lz;		// dimension of experiment box
-		bool		m_usePlanes; // use planes or boundaries
+		Cube					experiment_box;
+		Cube 					fluid;
+		PointVect				parts;
+		PointVect				boundary_parts;
+		PointVect				boundary_elems;
+		PointVect				vertex_parts;
+		VertexVect				vertex_indexes;
+		double					H;				// still water level
+		double					lx, ly, lz;		// dimension of experiment box
+		dQuaternion 			rcube;
+		bool					m_usePlanes; // use planes or boundaries
 
 		// ODE stuff
-		Cube		cube;
-		Cylinder	cylinder;
-		Cone 		cone;
-		dGeomID		planes[5];
-		dJointID	joint;
-		float3 		ODEGravity;
+		Cube					cube;
+		Cylinder				cylinder;
+		Cone 					cone;
+		dGeomID					planes[5];
+		dJointID				joint;
+		float3 					ODEGravity;
 
 		// ode output writing
-		ofstream 	outputData;
-		int 		intTime1, intTime2;
+		ofstream 				outputData;
+		int 					intTime1, intTime2;
 	
 	public:
-		GprobeFall(const GlobalData *);
+		GprobeFall(GlobalData *);
 		virtual ~GprobeFall(void);
 
 		int fill_parts(void);
@@ -48,7 +49,7 @@ class GprobeFall: public Problem {
 
 		void ODE_near_callback(void *, dGeomID, dGeomID);
 
-		float3 g_callback(const float);
+		float3 g_callback(const double);
 		void release_memory(void);
 };
 #endif	/* _GPROBEFALL_H */

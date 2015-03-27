@@ -8,7 +8,7 @@
 #include "GlobalData.h"
 
 
-GprobeFall::GprobeFall(const GlobalData *_gdata) : Problem(_gdata)
+GprobeFall::GprobeFall(GlobalData *_gdata) : Problem(_gdata)
 {
 	// Size and origin of the simulation domain
 	lx = 1.0;
@@ -74,8 +74,7 @@ GprobeFall::GprobeFall(const GlobalData *_gdata) : Problem(_gdata)
 	
 
 	// Drawing and saving times
-	set_timer_tick( 0.001f);
-	add_writer(VTKWRITER, 5);
+	add_writer(VTKWRITER, double(0.001));
 
 	intTime1 =  intTime2 = 0;
 	outputData.open("outputData.txt");
@@ -100,7 +99,7 @@ void GprobeFall::release_memory(void)
 	boundary_parts.clear();
 }
 
-float3 GprobeFall::g_callback(const float t)
+float3 GprobeFall::g_callback(const double t)
 {
 	if(t<15){
 		dWorldSetGravity(m_ODEWorld, ODEGravity.x, ODEGravity.y, ODEGravity.z);
@@ -128,8 +127,7 @@ int GprobeFall::fill_parts()
 {
 	float r0 = m_physparams.r0;
 
-	experiment_box = Cube(Point(0, 0, 0), Vector(lx, 0, 0),
-						Vector(0, ly, 0), Vector(0, 0, lz));
+	experiment_box = Cube(Point(0, 0, 0), lx, ly, lz, rcube);
 	planes[0] = dCreatePlane(m_ODESpace, 0.0, 0.0, 1.0, 0.0);
 	planes[1] = dCreatePlane(m_ODESpace, 1.0, 0.0, 0.0, 0.0);
 	planes[2] = dCreatePlane(m_ODESpace, -1.0, 0.0, 0.0, -lx);
@@ -148,7 +146,7 @@ int GprobeFall::fill_parts()
 	}
 
 
-	fluid = Cube(Point(r0, r0, r0), Vector(lx - 2*r0, 0, 0), Vector(0, ly - 2*r0, 0), Vector(0, 0, H - r0));
+	fluid = Cube(Point(r0, r0, r0), lx - 2*r0, ly - 2*r0, H - r0, rcube);
 
 	fluid.SetPartMass(m_deltap, m_physparams.rho0[0]);
 	fluid.Fill(parts, m_deltap, true);
