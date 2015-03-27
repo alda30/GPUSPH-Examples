@@ -16,7 +16,6 @@ CylinderFall::CylinderFall(GlobalData *_gdata) : Problem(_gdata)
 	ly = 1.0;
 	lz = 3.0;
 	H = 0.6;
-	wet = false;
 
 	m_usePlanes = true;
 
@@ -118,7 +117,7 @@ float3 CylinderFall::g_callback(const float t)
 		intTime1 = ceil(t/0.0001);
 		if (intTime1 > intTime2){
 			// The first output is time, the second is the velocity of the rigid body, and the third, fourth and fifth are the resultant forces applied on the rigid body. Note that for the s_hRbTotalForce[A][B]: A is the GPU device index, which for my case is 0 because I have only one GPU device, and B is the index of Rigid body of interest in the scene. Becasue here I have only one rigid body (cylinder), this parameter is set to zero again.
-			outputData << t << " " << dBodyGetLinearVel(cylinder.m_ODEBody)[2] << " " << gdata->s_hRbTotalForce[0][0].x << " " << gdata->s_hRbTotalForce[0][0].y << " " << gdata->s_hRbTotalForce[0][0].z << endl;
+			outputData << t << " " << dBodyGetLinearVel(cylinder.m_ODEBody)[2] << " " << gdata->s_hRbTotalForce[0].x << " " << gdata->s_hRbTotalForce[0].y << " " << gdata->s_hRbTotalForce[0].z << endl;
 		}
 		intTime2 = ceil(t/0.0001);
 	}
@@ -134,10 +133,9 @@ int CylinderFall::fill_parts()
 {
 	float r0 = m_physparams.r0;
 
-	Cube fluid, fluid1;
+	Cube fluid;
 
-	experiment_box = Cube(Point(0, 0, 0), Vector(lx, 0, 0),
-						Vector(0, ly, 0), Vector(0, 0, lz));
+	experiment_box = Cube(Point(0, 0, 0),lx,ly, lz,rcube);
 	planes[0] = dCreatePlane(m_ODESpace, 0.0, 0.0, 1.0, 0.0);
 	planes[1] = dCreatePlane(m_ODESpace, 1.0, 0.0, 0.0, 0.0);
 	planes[2] = dCreatePlane(m_ODESpace, -1.0, 0.0, 0.0, -lx);
@@ -157,13 +155,7 @@ int CylinderFall::fill_parts()
 	}
 
 
-	fluid = Cube(Point(r0, r0, r0), Vector(lx - 2*r0, 0, 0),
-				Vector(0, ly - 2*r0, 0), Vector(0, 0, H - r0));
-
-	if (wet) {
-		fluid1 = Cube(Point(H + m_deltap + r0 , r0, r0), Vector(lx - H - m_deltap - 2*r0, 0, 0),
-					Vector(0, 0.67 - 2*r0, 0), Vector(0, 0, 0.1));
-	}
+	fluid = Cube(Point(r0, r0, r0),lx - 2*r0,ly - 2*r0,H - r0, rcube);
 
 	boundary_parts.reserve(2000);
 	parts.reserve(14000);
@@ -180,11 +172,6 @@ int CylinderFall::fill_parts()
 
 	fluid.SetPartMass(m_deltap, m_physparams.rho0[0]);
 	fluid.Fill(parts, m_deltap, true);
-	if (wet) {
-		fluid1.SetPartMass(m_deltap, m_physparams.rho0[0]);
-		fluid1.Fill(parts, m_deltap, true);
-		obstacle.Unfill(parts, r0);
-	}
 
 	
 	// Rigid body #2 : cylinder
