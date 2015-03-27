@@ -9,7 +9,7 @@
 
 using namespace std;
 
-CylinderFall::CylinderFall(const GlobalData *_gdata) : Problem(_gdata)
+CylinderFall::CylinderFall(GlobalData *_gdata) : Problem(_gdata)
 {
 	// Size and origin of the simulation domain
 	lx = 1.0;
@@ -76,8 +76,7 @@ CylinderFall::CylinderFall(const GlobalData *_gdata) : Problem(_gdata)
 	
 
 	// Drawing and saving times
-	set_timer_tick( 0.001f);
-	add_writer(VTKWRITER, 5);
+	add_writer(VTKWRITER,  double(0.001));
 
 	intTime1 =  intTime2 = 0;
 	outputData.open("outputData.txt");

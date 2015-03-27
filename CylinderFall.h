@@ -38,11 +38,11 @@ class CylinderFall: public Problem {
 		float3 		ODEGravity;
 
 		// ode output writing
-		ofstream outputData;
+		ofstream 	outputData;
 		int 		intTime1, intTime2;
 	
 	public:
-		CylinderFall(const GlobalData *);
+		CylinderFall(GlobalData *);
 		virtual ~CylinderFall(void);
 
 		int fill_parts(void);
