@@ -17,13 +17,11 @@ using namespace std;
 class CylinderFall: public Problem {
 	private:
 		Cube					experiment_box;
-		Cube					obstacle;
 		PointVect				parts;
 		PointVect				boundary_parts;
 		PointVect				boundary_elems;
 		PointVect				vertex_parts;
 		VertexVect				vertex_indexes;
-		PointVect				obstacle_parts;
 		double					H;				// still water level
 		double					lx, ly, lz;		// dimension of experiment box
 		dQuaternion 			rcube;

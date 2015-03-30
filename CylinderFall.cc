@@ -17,13 +17,14 @@ CylinderFall::CylinderFall(GlobalData *_gdata) : Problem(_gdata)
 	lz = 3.0;
 	H = 0.6;
 
+
 	m_usePlanes = true;
 
 	m_size = make_double3(lx, ly, lz);
 	m_origin = make_double3(0.0, 0.0, 0.0);
 
 	// SPH parameters
-	set_deltap(0.03f);
+	set_deltap(0.02f);
 	m_simparams.dt = 0.0001f;
 	m_simparams.xsph = false;
 	m_simparams.dtadapt = true;
@@ -75,7 +76,7 @@ CylinderFall::CylinderFall(GlobalData *_gdata) : Problem(_gdata)
 	
 
 	// Drawing and saving times
-	add_writer(VTKWRITER,  double(0.001));
+	add_writer(VTKWRITER, 0.01);
 
 	intTime1 =  intTime2 = 0;
 	outputData.open("outputData.txt");
@@ -97,7 +98,6 @@ CylinderFall::~CylinderFall(void)
 void CylinderFall::release_memory(void)
 {
 	parts.clear();
-	obstacle_parts.clear();
 	boundary_parts.clear();
 }
 
@@ -135,15 +135,14 @@ int CylinderFall::fill_parts()
 
 	Cube fluid;
 
-	experiment_box = Cube(Point(0, 0, 0),lx,ly, lz,rcube);
+	experiment_box = Cube(Point(0, 0, 0),lx,ly, lz);
 	planes[0] = dCreatePlane(m_ODESpace, 0.0, 0.0, 1.0, 0.0);
 	planes[1] = dCreatePlane(m_ODESpace, 1.0, 0.0, 0.0, 0.0);
 	planes[2] = dCreatePlane(m_ODESpace, -1.0, 0.0, 0.0, -lx);
 	planes[3] = dCreatePlane(m_ODESpace, 0.0, 1.0, 0.0, 0.0);
 	planes[4] = dCreatePlane(m_ODESpace, 0.0, -1.0, 0.0, -ly);
 
-	//obstacle = Cube(Point(0.6, 0.24, 2*r0), Vector(0.12, 0, 0),
-	//				Vector(0, 0.12, 0), Vector(0, 0, 0.7*lz - 2*r0));
+	
 	experiment_box.SetPartMass(r0, m_physparams.rho0[0]);
 	if(!m_usePlanes){
 		if(m_simparams.boundarytype == SA_BOUNDARY) {
@@ -155,20 +154,11 @@ int CylinderFall::fill_parts()
 	}
 
 
-	fluid = Cube(Point(r0, r0, r0),lx - 2*r0,ly - 2*r0,H - r0, rcube);
+	fluid = Cube(Point(2*r0, 2*r0, 2*r0),lx - 2*r0,ly - 2*r0,H - r0);
 
 	boundary_parts.reserve(2000);
 	parts.reserve(14000);
 
-	
-	
-
-	obstacle.SetPartMass(r0, m_physparams.rho0[0]*0.1);
-	obstacle.SetMass(r0, m_physparams.rho0[0]*0.1);
-	//obstacle.FillBorder(obstacle.GetParts(), r0, true);
-	//obstacle.ODEBodyCreate(m_ODEWorld, m_deltap);
-	//obstacle.ODEGeomCreate(m_ODESpace, m_deltap);
-	//add_ODE_body(&obstacle);
 
 	fluid.SetPartMass(m_deltap, m_physparams.rho0[0]);
 	fluid.Fill(parts, m_deltap, true);
@@ -189,7 +179,7 @@ int CylinderFall::fill_parts()
 	dJointSetHingeAnchor(joint, 0.7, 0.24, 2*r0);	// Set a joint anchor
 	dJointSetHingeAxis(joint, 0, 1, 0);*/
 
-	return parts.size() + boundary_parts.size() + obstacle_parts.size() + get_ODE_bodies_numparts();
+	return parts.size() + boundary_parts.size() + get_ODE_bodies_numparts();
 }
 
 uint CylinderFall::fill_planes() // where is the source?
@@ -259,15 +249,6 @@ void CylinderFall::copy_to_array(BufferList &buffers)
 		j += rbparts.size();
 		std::cout << ", part mass: " << pos[j-1].w << "\n";
 	}
-
-	std::cout << "Obstacle parts: " << obstacle_parts.size() << "\n";
-	for (uint i = j; i < j + obstacle_parts.size(); i++) {
-		vel[i] = make_float4(0, 0, 0, m_physparams.rho0[0]);
-		info[i] = make_particleinfo(BOUNDPART, 1, i);
-		calc_localpos_and_hash(obstacle_parts[i-j], info[i], pos[i], hash[i]);
-	}
-	j += obstacle_parts.size();
-	std::cout << "Obstacle part mass:" << pos[j-1].w << "\n";
 
 	std::cout << "Fluid parts: " << parts.size() << "\n";
 	for (uint i = j; i < j + parts.size(); i++) {
