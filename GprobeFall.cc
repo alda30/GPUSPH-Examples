@@ -39,7 +39,7 @@ GprobeFall::GprobeFall(GlobalData *_gdata) : Problem(_gdata)
 	// SA boundary requires a triangular mesh with specific constraints, cannot
 	// be used here
 	m_simparams.tend = 20.0;
-	m_simparams.gcallback = true;
+	m_simparams.gcallback = false;
 
 	// Free surface detection
 	m_simparams.surfaceparticle = false;
@@ -161,7 +161,7 @@ int GprobeFall::fill_parts()
 	fluid.Fill(parts, m_deltap, true);
 	
 	// Rigid body #1 : graviprobe
-	graviprobe->SetPartMass(1.5f);
+	graviprobe->SetMass(1.5f);
 	// graviprobe->FillBorder(graviprobe.GetParts(), r0);
 	//graviprobe->ODEBodyCreate(m_ODEWorld, m_deltap); // only dynamics
 	//graviprobe->ODEGeomCreate(m_ODESpace, m_deltap); // only collisions
