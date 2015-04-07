@@ -23,7 +23,7 @@ CylinderFall::CylinderFall(GlobalData *_gdata) : Problem(_gdata)
 	m_origin = make_double3(0.0, 0.0, 0.0);
 
 	// SPH parameters
-	set_deltap(0.03f);
+	set_deltap(0.02f);
 	m_simparams.dt = 0.0001f;
 	m_simparams.xsph = false;
 	m_simparams.dtadapt = true;
@@ -159,7 +159,7 @@ int CylinderFall::fill_parts()
 	}
 
 
-	fluid = Cube(Point(2*r0, 2*r0, 2*r0),lx - 2*r0,ly - 2*r0,H - r0);
+	fluid = Cube(Point(r0,r0,r0), lx-(2*r0), ly-(2*r0), H);
 
 	boundary_parts.reserve(2000);
 	parts.reserve(14000);
