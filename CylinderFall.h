@@ -5,9 +5,6 @@
 #include "Problem.h"
 #include "Point.h"
 #include "Cube.h"
-#include "Sphere.h"
-#include "Cone.h"
-#include "Torus.h"
 #include "Cylinder.h"
 
 #include "ode/ode.h"
@@ -24,11 +21,9 @@ class CylinderFall: public Problem {
 		VertexVect				vertex_indexes;
 		double					H;				// still water level
 		double					lx, ly, lz;		// dimension of experiment box
-		dQuaternion 			rcube;
 		bool					m_usePlanes; // use planes or boundaries
 
 		// ODE stuff
-		Sphere					sphere;
 		Cube					cube;
 		Cylinder				cylinder;
 		dGeomID					planes[5];

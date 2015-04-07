@@ -3,7 +3,6 @@
 #include <fstream>
 
 #include "CylinderFall.h"
-#include "Point.h"
 #include "particledefine.h"
 #include "GlobalData.h"
 
@@ -24,7 +23,7 @@ CylinderFall::CylinderFall(GlobalData *_gdata) : Problem(_gdata)
 	m_origin = make_double3(0.0, 0.0, 0.0);
 
 	// SPH parameters
-	set_deltap(0.02f);
+	set_deltap(0.03f);
 	m_simparams.dt = 0.0001f;
 	m_simparams.xsph = false;
 	m_simparams.dtadapt = true;
@@ -34,7 +33,10 @@ CylinderFall::CylinderFall(GlobalData *_gdata) : Problem(_gdata)
 	m_simparams.mlsfreq = 0;
 	//m_simparams.visctype = ARTVISC;
 	m_simparams.visctype = DYNAMICVISC;
-	m_simparams.boundarytype= SA_BOUNDARY;
+	// m_simparams.boundarytype= SA_BOUNDARY;
+	// SA boundary requires a triangular mesh with specific constraints, cannot
+	// be used here
+	m_simparams.boundarytype= LJ_BOUNDARY;
 	m_simparams.tend = 20.0;
 	m_simparams.gcallback = true;
 
@@ -73,7 +75,10 @@ CylinderFall::CylinderFall(GlobalData *_gdata) : Problem(_gdata)
 	m_ODEJointGroup = dJointGroupCreate(0);
 	ODEGravity=make_float3(0.0,0.0,0.0);
 	dWorldSetGravity(m_ODEWorld, 0.0f, 0.0f, 0.0f);	// Set gravity（x, y, z)
-	
+
+	// ##### update simparams
+	// after allocation of the rigid bodies the simparams should be updated
+	m_simparams.numObjects = m_simparams.numODEbodies;	
 
 	// Drawing and saving times
 	add_writer(VTKWRITER, 0.01);
@@ -174,6 +179,10 @@ int CylinderFall::fill_parts()
 	cylinder.ODEGeomCreate(m_ODESpace, m_deltap);
 	add_ODE_body(&cylinder);
 
+	// let GPUSPH know that first object corresponds to the first ODE object
+	// (since not all objects are rigid bodies)
+	m_ODEobjectId[0] = 0;
+
 	/*joint = dJointCreateHinge(m_ODEWorld, 0);				// Create a hinge joint
 	dJointAttach(joint, obstacle.m_ODEBody, 0);		// Attach joint to bodies
 	dJointSetHingeAnchor(joint, 0.7, 0.24, 2*r0);	// Set a joint anchor
@@ -238,14 +247,24 @@ void CylinderFall::copy_to_array(BufferList &buffers)
 	int j = boundary_parts.size();
 	std::cout << "Boundary part mass:" << pos[j-1].w << "\n";
 
+	uint object_particle_counter = 0;
 	for (uint k = 0; k < m_simparams.numODEbodies; k++) {
 		PointVect & rbparts = get_ODE_body(k)->GetParts();
 		std::cout << "Rigid body " << k << ": " << rbparts.size() << " particles ";
 		for (uint i = j; i < j + rbparts.size(); i++) {
 			vel[i] = make_float4(0, 0, 0, m_physparams.rho0[0]);
-			info[i] = make_particleinfo(OBJECTPART, k, i - j);
+			// In some SA-enabled branches objectId==0 means "no object", so add 1 and subtract
+			// back in Euler; this will change again
+			info[i] = make_particleinfo(OBJECTPART, k+1, i);
 			calc_localpos_and_hash(rbparts[i - j], info[i], pos[i], hash[i]);
 		}
+		// compute the *local* index of the last particle of the object, where the
+		// sum of the forces will be written
+		gdata->s_hRbLastIndex[k] = object_particle_counter + rbparts.size() - 1;
+		// compute the offset to be added to the if of each particle of the object
+		// to obtain the local offset in rbforces and rbtorques array
+		gdata->s_hRbFirstIndex[k] = -j + object_particle_counter;
+		object_particle_counter += rbparts.size();
 		j += rbparts.size();
 		std::cout << ", part mass: " << pos[j-1].w << "\n";
 	}
