@@ -5,11 +5,12 @@
 #include "Problem.h"
 #include "Point.h"
 #include "Cube.h"
-#include "Sphere.h"
-#include "Cone.h"
-#include "Cylinder.h"
 
+// to enable GPUSPH to use ODE this library is needed
 #include "ode/ode.h"
+// to enable GPUSPH to use STLMesh feature
+#include "STLMesh.h"
+#include <string>
 
 
 class GprobeFall: public Problem {
@@ -23,13 +24,12 @@ class GprobeFall: public Problem {
 		VertexVect				vertex_indexes;
 		double					H;				// still water level
 		double					lx, ly, lz;		// dimension of experiment box
-		dQuaternion 			rcube;
 		bool					m_usePlanes; // use planes or boundaries
 
 		// ODE stuff
+		STLMesh					*graviprobe; // the stl format of the mesh of graviprobe
+		string					inputfile;
 		Cube					cube;
-		Cylinder				cylinder;
-		Cone 					cone;
 		dGeomID					planes[5];
 		dJointID				joint;
 		float3 					ODEGravity;

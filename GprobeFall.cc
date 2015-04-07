@@ -3,13 +3,15 @@
 #include <fstream>
 
 #include "GprobeFall.h"
-#include "Point.h"
 #include "particledefine.h"
 #include "GlobalData.h"
 
 
 GprobeFall::GprobeFall(GlobalData *_gdata) : Problem(_gdata)
 {
+
+	graviprobe = STLMesh::load_stl("src/Graviprobe.stl");
+
 	// Size and origin of the simulation domain
 	lx = 1.0;
 	ly = 1.0;
@@ -22,7 +24,7 @@ GprobeFall::GprobeFall(GlobalData *_gdata) : Problem(_gdata)
 	m_origin = make_double3(0.0, 0.0, 0.0);
 
 	// SPH parameters
-	set_deltap(0.04f);
+	set_deltap(0.03f);
 	m_simparams.dt = 0.0001f;
 	m_simparams.xsph = false;
 	m_simparams.dtadapt = true;
@@ -32,7 +34,10 @@ GprobeFall::GprobeFall(GlobalData *_gdata) : Problem(_gdata)
 	m_simparams.mlsfreq = 0;
 	//m_simparams.visctype = ARTVISC;
 	m_simparams.visctype = DYNAMICVISC;
-	m_simparams.boundarytype= SA_BOUNDARY;
+	m_simparams.boundarytype= LJ_BOUNDARY;
+	// m_simparams.boundarytype= SA_BOUNDARY;
+	// SA boundary requires a triangular mesh with specific constraints, cannot
+	// be used here
 	m_simparams.tend = 20.0;
 	m_simparams.gcallback = true;
 
@@ -64,17 +69,20 @@ GprobeFall::GprobeFall(GlobalData *_gdata) : Problem(_gdata)
 	m_physparams.epsartvisc = 0.01*m_simparams.slength*m_simparams.slength;
 
 	// Allocate data for floating bodies
-	allocate_ODE_bodies(2);
+	allocate_ODE_bodies(1);
 	dInitODE();				// Initialize ODE
 	m_ODEWorld = dWorldCreate();	// Create a dynamic world
 	m_ODESpace = dHashSpaceCreate(0);
 	m_ODEJointGroup = dJointGroupCreate(0);
 	ODEGravity=make_float3(0.0,0.0,0.0);
 	dWorldSetGravity(m_ODEWorld, 0.0f, 0.0f, 0.0f);	// Set gravity（x, y, z)
-	
+
+	// ##### update simparams
+	// after allocation of the rigid bodies the simparams should be updated
+	m_simparams.numObjects = 1;
 
 	// Drawing and saving times
-	add_writer(VTKWRITER, double(0.001));
+	add_writer(VTKWRITER, double(0.01));
 
 	intTime1 =  intTime2 = 0;
 	outputData.open("outputData.txt");
@@ -88,6 +96,7 @@ GprobeFall::GprobeFall(GlobalData *_gdata) : Problem(_gdata)
 GprobeFall::~GprobeFall(void)
 {
 	release_memory();
+	dSpaceDestroy(m_ODESpace);
 	dWorldDestroy(m_ODEWorld);
 	dCloseODE();
 }
@@ -114,7 +123,7 @@ float3 GprobeFall::g_callback(const double t)
 	if (t>15 && t<16) {
 		intTime1 = ceil(t/0.0001);
 		if (intTime1 > intTime2){
-			outputData << t << " " << dBodyGetLinearVel(cylinder.m_ODEBody)[2] << endl;
+			outputData << t << " " << dBodyGetLinearVel(graviprobe->m_ODEBody)[2] << endl;
 		}
 		intTime2 = ceil(t/0.0001);
 	}
@@ -127,7 +136,7 @@ int GprobeFall::fill_parts()
 {
 	float r0 = m_physparams.r0;
 
-	experiment_box = Cube(Point(0, 0, 0), lx, ly, lz, rcube);
+	experiment_box = Cube(Point(0, 0, 0), lx, ly, lz);
 	planes[0] = dCreatePlane(m_ODESpace, 0.0, 0.0, 1.0, 0.0);
 	planes[1] = dCreatePlane(m_ODESpace, 1.0, 0.0, 0.0, 0.0);
 	planes[2] = dCreatePlane(m_ODESpace, -1.0, 0.0, 0.0, -lx);
@@ -146,28 +155,22 @@ int GprobeFall::fill_parts()
 	}
 
 
-	fluid = Cube(Point(r0, r0, r0), lx - 2*r0, ly - 2*r0, H - r0, rcube);
+	fluid = Cube(Point(r0, r0, r0), lx - 2*r0, ly - 2*r0, H - r0);
 
 	fluid.SetPartMass(m_deltap, m_physparams.rho0[0]);
 	fluid.Fill(parts, m_deltap, true);
 	
-	// Rigid body #1 : cylinder
-	cylinder = Cylinder(Point(0.5*lx, 0.5*ly, 2.0), 0.025, Vector(0, 0, 0.5));
-	cylinder.SetPartMass(4.5f);
-	cylinder.SetMass(4.5f);
-	cylinder.FillBorder(cylinder.GetParts(), r0);
-	cylinder.ODEBodyCreate(m_ODEWorld, m_deltap);
-	cylinder.ODEGeomCreate(m_ODESpace, m_deltap);
-	add_ODE_body(&cylinder);
+	// Rigid body #1 : graviprobe
+	graviprobe->SetPartMass(1.5f);
+	// graviprobe->FillBorder(graviprobe.GetParts(), r0);
+	//graviprobe->ODEBodyCreate(m_ODEWorld, m_deltap); // only dynamics
+	//graviprobe->ODEGeomCreate(m_ODESpace, m_deltap); // only collisions
+	graviprobe->ODEBodyCreate(m_ODEWorld, m_deltap, m_ODESpace); // dynamics + collisions
+	add_ODE_body(graviprobe);
 
-	// Rigid body #2 :  cone
-	cone = Cone(Point(0.5*lx, 0.5*ly, 1.5), 0.0, 0.025, Vector(0.0, 0.0, 0.1));
-	cone.SetPartMass(1.0f);
-	cone.SetMass(1.0f);
-	cone.FillBorder(cone.GetParts(), r0);
-	cone.ODEBodyCreate(m_ODEWorld, m_deltap);
-	cone.ODEGeomCreate(m_ODESpace, m_deltap);
-	add_ODE_body(&cone);
+	// let GPUSPH know that first object corresponds to the first ODE object
+	// (since not all objects are rigid bodies)
+	m_ODEobjectId[0] = 0;
 
 	/*joint = dJointCreateHinge(m_ODEWorld, 0);				// Create a hinge joint
 	dJointAttach(joint, obstacle.m_ODEBody, 0);		// Attach joint to bodies (presumably for two objects)
@@ -208,9 +211,6 @@ void GprobeFall::ODE_near_callback(void *data, dGeomID o1, dGeomID o2)
 	dContact contact[N];
 	
 	int n = dCollide(o1, o2, N, &contact[0].geom, sizeof(dContact));
-	if ((o1 == cylinder.m_ODEGeom && o2 == cone.m_ODEGeom) || (o2 == cylinder.m_ODEGeom && o1 == cone.m_ODEGeom)) {
-		cout << "Collision between cube and obstacle " << n << "contact points\n";
-	}
 	
 	for (int i = 0; i < n; i++) {
 		contact[i].surface.mode = dContactBounce;
@@ -239,14 +239,24 @@ void GprobeFall::copy_to_array(BufferList &buffers)
 	int j = boundary_parts.size();
 	std::cout << "Boundary part mass:" << pos[j-1].w << "\n";
 
+	uint object_particle_counter = 0;
 	for (uint k = 0; k < m_simparams.numODEbodies; k++) {
 		PointVect & rbparts = get_ODE_body(k)->GetParts();
 		std::cout << "Rigid body " << k << ": " << rbparts.size() << " particles ";
 		for (uint i = j; i < j + rbparts.size(); i++) {
 			vel[i] = make_float4(0, 0, 0, m_physparams.rho0[0]);
-			info[i] = make_particleinfo(OBJECTPART, k, i - j);
+			// In some SA-enabled branches objectId==0 means "no object", so add 1 and subtract
+			// back in Euler; this will change again
+			info[i] = make_particleinfo(OBJECTPART, k+1, i);
 			calc_localpos_and_hash(rbparts[i - j], info[i], pos[i], hash[i]);
 		}
+		// compute the *local* index of the last particle of the object, where the
+		// sum of the forces will be written
+		gdata->s_hRbLastIndex[k] = object_particle_counter + rbparts.size() - 1;
+		// compute the offset to be added to the if of each particle of the object
+		// to obtain the local offset in rbforces and rbtorques array
+		gdata->s_hRbFirstIndex[k] = -j + object_particle_counter;
+		object_particle_counter += rbparts.size();
 		j += rbparts.size();
 		std::cout << ", part mass: " << pos[j-1].w << "\n";
 	}
