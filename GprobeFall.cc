@@ -10,7 +10,7 @@
 GprobeFall::GprobeFall(GlobalData *_gdata) : Problem(_gdata)
 {
 
-	graviprobe = STLMesh::load_stl("src/Graviprobe.stl");
+	graviprobe = STLMesh::load_stl("src/Graviprobe-20cm.stl");
 
 	// Size and origin of the simulation domain
 	lx = 1.0;
@@ -24,7 +24,7 @@ GprobeFall::GprobeFall(GlobalData *_gdata) : Problem(_gdata)
 	m_origin = make_double3(0.0, 0.0, 0.0);
 
 	// SPH parameters
-	set_deltap(0.03f);
+	set_deltap(0.02f);
 	m_simparams.dt = 0.0001f;
 	m_simparams.xsph = false;
 	m_simparams.dtadapt = true;
@@ -36,8 +36,7 @@ GprobeFall::GprobeFall(GlobalData *_gdata) : Problem(_gdata)
 	m_simparams.visctype = DYNAMICVISC;
 	m_simparams.boundarytype= LJ_BOUNDARY;
 	// m_simparams.boundarytype= SA_BOUNDARY;
-	// SA boundary requires a triangular mesh with specific constraints, cannot
-	// be used here
+	// SA boundary requires a triangular mesh with specific constraints, canno be used here
 	m_simparams.tend = 20.0;
 	m_simparams.gcallback = true;
 
@@ -65,7 +64,7 @@ GprobeFall::GprobeFall(GlobalData *_gdata) : Problem(_gdata)
 	#undef MK_par
 
 	m_physparams.kinematicvisc = 0.125;
-	m_physparams.artvisccoeff = 600;
+	m_physparams.artvisccoeff = 300;
 	m_physparams.epsartvisc = 0.01*m_simparams.slength*m_simparams.slength;
 
 	// Allocate data for floating bodies
